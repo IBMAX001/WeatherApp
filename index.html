@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- ================================================================
+     IBWAPP — index.html
+     The structure and content of the weather app landing page.
+     All styles live in styles.css · All behaviour lives in script.js
+================================================================ -->
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Page title — shows in the browser tab -->
+  <title>IBWAPP</title>
+
+  <!-- Google Fonts — loads the three typefaces used on the page:
+       Cormorant Garamond (serif headlines & temperatures)
+       DM Sans (body text & UI labels)
+       DM Mono (data readouts, time, units)
+       SWAP: Replace with any Google Fonts link of your choice. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap"
+    rel="stylesheet" />
+
+  <!-- Main stylesheet — all visual styling lives here -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+
+<body>
+
+  <!-- ════════════════════════════════════════════════════════════
+       NAVIGATION
+       Fixed bar at the top of every page section.
+       SWAP: Change the logo text, add/remove nav links freely.
+       The href="#weather" etc. links scroll to section id="weather".
+  ════════════════════════════════════════════════════════════ -->
+  <nav>
+
+    <!-- Brand logo — "IBW" in light, "APP" in gold italic -->
+    <a href="#" class="nav-logo">IBW<span>APP</span></a>
+
+    <!-- Navigation links — each points to a section anchor below -->
+    <ul class="nav-links">
+      <li><a href="#search">Search City</a></li>
+      <li><a href="#weather">Live Weather</a></li>
+      <li><a href="#climate">Climate</a></li>
+      <li><a href="#forecast">Forecast</a></li>
+      <li><a href="#features">Features</a></li>
+    </ul>
+
+  </nav>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       HERO SECTION
+       Full-viewport opening. Contains the sky background, animated
+       clouds, sun, large temperature display, and quick stat pills.
+  ════════════════════════════════════════════════════════════ -->
+  <section class="hero" id="top">
+
+    <!-- Sky background gradient layer.
+         SWAP: Replace this div with an <img> or <video> for a real photo sky.
+         Example:
+           <img src="sky-photo.jpg" class="hero-bg" style="object-fit:cover; width:100%; height:100%;" />
+    -->
+    <div class="hero-bg"></div>
+
+    <!-- Animated cloud layer — four CSS blobs that drift across the sky.
+         SWAP: Replace each inner div with:
+           <img src="cloud1.png" class="cloud cloud-1" alt="" />
+         Use PNG images with transparent backgrounds for a realistic look.
+    -->
+    <div class="cloud-layer">
+      <div class="cloud cloud-1" data-speed="0.3"></div>
+      <div class="cloud cloud-2" data-speed="0.2"></div>
+      <div class="cloud cloud-3" data-speed="0.15"></div>
+      <div class="cloud cloud-4" data-speed="0.1"></div>
+    </div>
+
+    <!-- Sun element — a glowing CSS circle.
+         SWAP: Replace this div with <img src="sun.svg" class="sky-body" />
+         or drop in a custom SVG sun illustration.
+    -->
+    <div class="sky-body"></div>
+
+    <!-- Hero content grid — left: temperature, right: tagline + stats -->
+    <div class="hero-content">
+
+      <!-- LEFT: location, big temperature, condition, time -->
+      <div class="hero-left">
+
+        <!-- SWAP: Replace text with your live geocoded city name.
+             Wire to a geolocation API for automatic city detection. -->
+        <div class="hero-location" id="hero-location">Lagos, Nigeria — West Africa</div>
+
+        <!-- SWAP: Replace "28" with the live temperature from your weather API.
+             The °C unit is in a <span class="unit"> for separate styling. -->
+        <div class="hero-temp"><span id="hero-temp-val">28</span><span class="unit">°C</span></div>
+
+        <!-- SWAP: Replace text with the live condition string from your API
+             e.g. "Clear", "Heavy Rain", "Overcast" -->
+        <div class="hero-condition" id="hero-condition">Partly Cloudy, rising</div>
+
+        <!-- Live time — updated every minute by script.js (updateTime function).
+             SWAP: Remove the id="live-time" and script logic if you want
+             to hardcode this or drive it from a server. -->
+        <div class="hero-time" id="live-time">Wednesday · 09:41 WAT · Humidity 74%</div>
+
+      </div>
+
+      <!-- RIGHT: editorial tagline + quick metric pills -->
+      <div class="hero-right">
+
+        <!-- Tagline — italic serif quote with gold left border.
+             SWAP: Change this copy to your own brand message. -->
+        <p class="hero-tagline">
+          The atmosphere never lies.<br>
+          <em>Read it like the earth does.</em>
+        </p>
+
+        <!-- Quick stat pills — small glass pills showing key metrics at a glance.
+             SWAP: Change the text in .stat-pill-val for each pill to your live data.
+             Add or remove <div class="stat-pill"> blocks to show different metrics. -->
+        <div class="quick-stats">
+
+          <div class="stat-pill">
+            <span class="stat-pill-label">Wind</span>
+            <span class="stat-pill-val" id="hero-wind">14 km/h</span>
+          </div>
+
+          <div class="stat-pill">
+            <span class="stat-pill-label">UV Index</span>
+            <span class="stat-pill-val">7 — High</span>
+          </div>
+
+          <div class="stat-pill">
+            <span class="stat-pill-label">Visibility</span>
+            <span class="stat-pill-val">12 km</span>
+          </div>
+
+          <div class="stat-pill">
+            <span class="stat-pill-label">Dew Point</span>
+            <span class="stat-pill-val">22°C</span>
+          </div>
+
+          <div class="stat-pill">
+            <span class="stat-pill-label">Pressure</span>
+            <span class="stat-pill-val" id="hero-pressure">1012 hPa</span>
+          </div>
+
+          <div class="stat-pill">
+            <span class="stat-pill-label">AQI</span>
+            <span class="stat-pill-val">52 — Moderate</span>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Scroll indicator — animated line + "Explore" text at page bottom.
+         This is purely decorative — no logic needed. -->
+    <div class="scroll-hint">
+      <div class="scroll-line"></div>
+      <span>Explore</span>
+    </div>
+
+  </section>
+
+  <!-- Thin gold gradient line — visual separator between hero and content -->
+  <div class="horizon-divider"></div>
+
+
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       CITY SEARCH SECTION
+       Lets the user type any city and fetches live weather data
+       using the free Open-Meteo API (no API key required).
+       id="search" is the scroll target for the nav link.
+
+       HOW IT WORKS:
+         1. User types a city name and presses Enter or clicks Search
+         2. script.js geocodes the city via Open-Meteo Geocoding API
+         3. script.js fetches weather via Open-Meteo Forecast API
+         4. Results are injected into #city-result-panel below
+  ════════════════════════════════════════════════════════════ -->
+  <section class="section search-section" id="search">
+
+    <!-- Background glow — warm gold radial from centre to match the section mood -->
+    <div class="search-section-bg"></div>
+
+    <div class="section-inner">
+
+      <!-- Section label + headline -->
+      <div class="section-label">Explore Any City</div>
+      <div class="section-title">Where in the world <em>is the sky today?</em></div>
+
+      <!-- ── SEARCH BAR ──
+           The input and button sit inside a glass pill container.
+           script.js listens for the Enter key on the input AND
+           a click on the button — both trigger the same search. -->
+      <div class="city-search-bar">
+
+        <!-- Location pin icon — purely decorative -->
+        <span class="search-icon">◎</span>
+
+        <!-- Text input — user types a city name here.
+             id="city-input" is referenced in script.js -->
+        <input type="text" id="city-input" class="city-input" placeholder="Type a city — London, Tokyo, São Paulo…"
+          autocomplete="off" spellcheck="false" />
+
+        <!-- Search button — triggers fetchCityWeather() in script.js -->
+        <button id="city-search-btn" class="city-search-btn">
+          Search
+        </button>
+
+      </div>
+
+      <!-- ── LOADING STATE ──
+           Hidden by default. Shown while API requests are in flight.
+           script.js toggles visibility via the .visible class. -->
+      <div class="city-loading" id="city-loading">
+        <div class="city-loading-dot"></div>
+        <div class="city-loading-dot"></div>
+        <div class="city-loading-dot"></div>
+        <span class="city-loading-text">Reading the atmosphere…</span>
+      </div>
+
+      <!-- ── ERROR STATE ──
+           Hidden by default. Shown when the city isn't found or
+           the API call fails. Text is set dynamically in script.js. -->
+      <div class="city-error" id="city-error">
+        <span class="city-error-icon">⚠</span>
+        <span id="city-error-text">City not found. Try a different spelling.</span>
+      </div>
+
+      <!-- ── RESULTS PANEL ──
+           Hidden by default. Revealed with a fade-in once data arrives.
+           All inner values are populated dynamically by script.js.
+           The structure reuses the exact same .cards-grid and
+           .weather-card classes as the rest of the page. -->
+      <div class="city-result-panel" id="city-result-panel">
+
+        <!-- Result header — city name, country, coordinates -->
+        <div class="city-result-header">
+          <div class="city-result-name-wrap">
+            <!-- Blinking live dot — same style as the hero location -->
+            <span class="city-result-dot">◉</span>
+            <!-- Populated by script.js: "London, United Kingdom" -->
+            <span class="city-result-name" id="result-city-name">—</span>
+          </div>
+          <!-- Populated by script.js: lat/lon string -->
+          <span class="city-result-coords" id="result-coords">—</span>
+        </div>
+
+        <!-- Featured row: large temperature + feels-like + condition -->
+        <div class="city-result-featured">
+
+          <!-- Big temperature number — same serif style as the hero -->
+          <div class="city-featured-temp">
+            <span class="city-temp-val" id="result-temp">—</span>
+            <span class="city-temp-unit">°C</span>
+          </div>
+
+          <div class="city-featured-meta">
+            <!-- Weather condition string e.g. "Partly Cloudy" -->
+            <div class="city-condition" id="result-condition">—</div>
+            <!-- Feels-like temperature -->
+            <div class="city-feels">
+              Feels like <span id="result-feels">—</span>°C
+            </div>
+            <!-- Weather icon emoji — set by script.js based on weather code -->
+            <div class="city-weather-icon" id="result-icon">—</div>
+          </div>
+
+        </div>
+
+        <!-- Metric cards row — reuses .cards-grid and .weather-card
+             exactly as used in the Live Conditions section above.
+             Values are all populated by script.js. -->
+        <div class="cards-grid city-metrics-grid">
+
+          <!-- Humidity card -->
+          <div class="weather-card">
+            <div class="card-icon card-icon-humidity">💧</div>
+            <div class="card-metric">Humidity</div>
+            <div class="card-value" id="result-humidity">—<sup>%</sup></div>
+            <div class="card-bar-track">
+              <!-- Width updated dynamically by script.js -->
+              <div class="card-bar-fill" id="result-humidity-bar" style="width: 0%;"></div>
+            </div>
+            <div class="card-desc" id="result-humidity-desc">—</div>
+          </div>
+
+          <!-- Wind card -->
+          <div class="weather-card">
+            <div class="card-icon card-icon-wind">🌬</div>
+            <div class="card-metric">Wind Speed</div>
+            <div class="card-value" id="result-wind">—<sup>km/h</sup></div>
+            <div class="card-desc" id="result-wind-desc">—</div>
+          </div>
+
+          <!-- Pressure card -->
+          <div class="weather-card">
+            <div class="card-icon card-icon-pressure">🔵</div>
+            <div class="card-metric">Pressure</div>
+            <div class="card-value" id="result-pressure">—<sup>hPa</sup></div>
+            <div class="card-desc" id="result-pressure-desc">—</div>
+          </div>
+
+          <!-- Cloud Cover card -->
+          <div class="weather-card">
+            <div class="card-icon" style="background: rgba(180,196,214,0.12);">☁️</div>
+            <div class="card-metric">Cloud Cover</div>
+            <div class="card-value" id="result-cloud">—<sup>%</sup></div>
+            <div class="card-bar-track">
+              <div class="card-bar-fill" id="result-cloud-bar"
+                style="width: 0%; background: linear-gradient(to right, var(--sky-warm), var(--cloud-grey));"></div>
+            </div>
+            <div class="card-desc" id="result-cloud-desc">—</div>
+          </div>
+
+        </div>
+        <!-- End city metrics grid -->
+
+      </div>
+      <!-- End city-result-panel -->
+
+    </div>
+    <!-- Spinner overlay — shown during auto geolocation load -->
+    <div class="city-spinner-overlay" id="city-spinner-overlay">
+      <div class="city-spinner"></div>
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       LIVE CONDITIONS — WEATHER CARDS
+       Two rows of metric cards. Row 1: 4 equal cards.
+       Row 2: one wide feels-like card + two narrow cards.
+       id="weather" is the scroll target for the nav link.
+  ════════════════════════════════════════════════════════════ -->
+  <section class="section" id="weather">
+
+    <!-- Background gradient layer — styled in styles.css -->
+    <div class="section-bg-layer"></div>
+
+    <div class="section-inner">
+
+      <!-- Section label + title -->
+      <div class="section-label">Live Conditions</div>
+      <div class="section-title">Right now, <em>the sky tells a story</em></div>
+
+      <!-- ROW 1: Four metric cards (humidity, wind, UV, pressure).
+           SWAP: Add/remove/reorder cards freely. Each .weather-card = one metric.
+           Change .card-icon-* class to adjust icon background colour. -->
+      <div class="cards-grid">
+
+        <!-- Card: Humidity -->
+        <div class="weather-card">
+          <!-- SWAP: Replace emoji with <img src="icon-humidity.svg" /> -->
+          <div class="card-icon card-icon-humidity">💧</div>
+          <div class="card-metric">Humidity</div>
+          <div class="card-value" id="main-humidity">74<sup>%</sup></div>
+          <div class="card-bar-track">
+            <!-- SWAP: Change width % to match your humidity value (0–100%) -->
+            <div class="card-bar-fill" id="main-humidity-bar" style="width: 74%;"></div>
+          </div>
+          <div class="card-desc">Tropical maritime air. Skin feels the moisture before rain does.</div>
+        </div>
+
+        <!-- Card: Wind Speed -->
+        <div class="weather-card">
+          <div class="card-icon card-icon-wind">🌬</div>
+          <div class="card-metric">Wind Speed</div>
+          <div class="card-value" id="main-wind">14<sup>km/h</sup></div>
+          <div style="font-family: var(--mono); font-size: 0.72rem; color: var(--text-data);">WSW · Gentle Breeze</div>
+          <div class="card-desc">Beaufort Scale 3 — leaves and twigs in constant motion.</div>
+        </div>
+
+        <!-- Card: UV Index -->
+        <div class="weather-card">
+          <div class="card-icon card-icon-uv">☀️</div>
+          <div class="card-metric">UV Index</div>
+          <div class="card-value" id="main-uv">7<sup>/11</sup></div>
+          <div class="card-bar-track">
+            <!-- width = (UV value / 11) × 100 -->
+            <div class="card-bar-fill" id="main-uv-bar" style="width: 63%; background: linear-gradient(to right, #E8A84C, #E07A5F);">
+            </div>
+          </div>
+          <div class="card-desc">High — sunscreen is not optional. Peak burns in under 20 min.</div>
+        </div>
+
+        <!-- Card: Atmospheric Pressure -->
+        <div class="weather-card">
+          <div class="card-icon card-icon-pressure">🔵</div>
+          <div class="card-metric">Pressure</div>
+          <div class="card-value" id="main-pressure">1012<sup>hPa</sup></div>
+          <!-- SWAP: Change "Rising / Stable / Falling" based on pressure trend -->
+          <div style="font-family: var(--mono); font-size: 0.72rem; color: var(--text-data);">▲ Rising · Stable</div>
+          <div class="card-desc">Above standard. Clear skies expected through the afternoon.</div>
+        </div>
+
+      </div>
+      <!-- End cards-grid row 1 -->
+
+
+      <!-- ROW 2: Wide feels-like card + precipitation + cloud cover.
+           The grid is 2fr + 1fr + 1fr (set in styles.css .cards-grid-2). -->
+      <div class="cards-grid-2">
+
+        <!-- Wide Card: Temperature + Feels Like + Daily Range -->
+        <div class="weather-card-wide">
+          <div class="card-metric">Temperature Today</div>
+
+          <!-- Actual temp + feels-like displayed side by side -->
+          <div class="wide-temp-display">
+            <!-- SWAP: Change "28°" to your live temperature -->
+            <div class="wide-temp-main" id="main-temp">28°</div>
+
+            <div class="wide-temp-feels">
+              <span class="label">Feels Like</span>
+              <!-- SWAP: Change "32°C" to your live apparent temperature -->
+              <span class="val" id="main-feels">32°C</span>
+            </div>
+          </div>
+
+          <!-- Colour gradient bar from cold blue to warm red. -->
+          <div class="temp-range-bar">
+            <div class="temp-range-marker" id="main-temp-marker" style="left: 62%;"></div>
+          </div>
+
+          <!-- SWAP: Change Lo and Hi values to your daily low/high temps -->
+          <div class="temp-range-labels">
+            <span>Lo 22°</span>
+            <span>Hi 34°</span>
+          </div>
+
+          <div class="card-desc" style="margin-top: 0.5rem;">
+            High humidity raises the apparent temperature significantly above the thermometric reading.
+          </div>
+        </div>
+
+        <!-- Card: Precipitation Probability -->
+        <div class="weather-card-wide">
+          <div class="card-metric">Precipitation</div>
+          <!-- SWAP: Change "40" to your live rain probability (0–100%) -->
+          <div class="card-value" style="font-family: var(--serif); font-size: 3.2rem; font-weight: 300;">
+            40<sup style="font-size: 0.42em; color: var(--text-muted); font-style: italic;">%</sup>
+          </div>
+          <!-- SWAP: Update this line with expected rain type and amount -->
+          <div style="font-family: var(--mono); font-size: 0.72rem; color: var(--text-data);">Light showers possible ·
+            2–4mm</div>
+          <div class="card-desc" style="margin-top: 0.4rem;">Evening convective activity likely. West African monsoon
+            influence.</div>
+        </div>
+
+        <!-- Card: Cloud Cover -->
+        <div class="weather-card-wide">
+          <div class="card-metric">Cloud Cover</div>
+          <div class="card-value" id="main-cloud" style="font-family: var(--serif); font-size: 3.2rem; font-weight: 300;">
+            48<sup style="font-size: 0.42em; color: var(--text-muted); font-style: italic;">%</sup>
+          </div>
+          <!-- SWAP: Update cloud type from your API -->
+          <div id="main-cloud-type" style="font-family: var(--mono); font-size: 0.72rem; color: var(--text-data);">Partly cloudy · Cumulus
+          </div>
+          <div class="card-desc" style="margin-top: 0.4rem;">Mid-level cumulus with patches of open sky. Cumulonimbus
+            developing in the east.</div>
+        </div>
+
+      </div>
+      <!-- End cards-grid row 2 -->
+
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       7-DAY FORECAST STRIP
+       A horizontal row of seven day columns.
+       id="forecast" is the scroll target for the nav link.
+  ════════════════════════════════════════════════════════════ -->
+  <section class="forecast-section" id="forecast">
+    <div class="forecast-strip">
+
+      <div class="forecast-label">7 — Day Outlook</div>
+
+      <!-- Seven-column day grid.
+           SWAP: Generate these .forecast-day divs dynamically from your API.
+           Add class="today" to whichever day is the current day.
+           Change: .forecast-day-name (day label), .forecast-icon (weather icon),
+                   .forecast-temp-hi (high temp), .forecast-temp-lo (low temp) -->
+      <div class="forecast-days">
+
+        <!-- Today — highlighted with gold tint via class="today" -->
+        <div class="forecast-day today">
+          <div class="forecast-day-name">Today</div>
+          <!-- SWAP: Replace emoji with <img src="icons/partly-cloudy.svg" /> -->
+          <div class="forecast-icon">⛅</div>
+          <div class="forecast-temp-hi">28°</div>
+          <div class="forecast-temp-lo">22°</div>
+        </div>
+
+        <div class="forecast-day">
+          <div class="forecast-day-name">Thu</div>
+          <div class="forecast-icon">🌦</div>
+          <div class="forecast-temp-hi">26°</div>
+          <div class="forecast-temp-lo">21°</div>
+        </div>
+
+        <div class="forecast-day">
+          <div class="forecast-day-name">Fri</div>
+          <div class="forecast-icon">🌧</div>
+          <div class="forecast-temp-hi">24°</div>
+          <div class="forecast-temp-lo">20°</div>
+        </div>
+
+        <div class="forecast-day">
+          <div class="forecast-day-name">Sat</div>
+          <div class="forecast-icon">🌤</div>
+          <div class="forecast-temp-hi">30°</div>
+          <div class="forecast-temp-lo">23°</div>
+        </div>
+
+        <div class="forecast-day">
+          <div class="forecast-day-name">Sun</div>
+          <div class="forecast-icon">☀️</div>
+          <div class="forecast-temp-hi">32°</div>
+          <div class="forecast-temp-lo">24°</div>
+        </div>
+
+        <div class="forecast-day">
+          <div class="forecast-day-name">Mon</div>
+          <div class="forecast-icon">⛅</div>
+          <div class="forecast-temp-hi">29°</div>
+          <div class="forecast-temp-lo">23°</div>
+        </div>
+
+        <div class="forecast-day">
+          <div class="forecast-day-name">Tue</div>
+          <div class="forecast-icon">🌦</div>
+          <div class="forecast-temp-hi">27°</div>
+          <div class="forecast-temp-lo">21°</div>
+        </div>
+
+      </div>
+      <!-- End forecast-days -->
+
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       CLIMATE STORY + CTA SECTION
+       Two-column layout: editorial text on the left,
+       the climate dial SVG visualization on the right.
+       id="climate" is the scroll target for the nav link.
+  ════════════════════════════════════════════════════════════ -->
+  <section class="story-section" id="climate">
+
+    <!-- Background gradient layer — subtle blue/gold radial glows -->
+    <div class="story-bg"></div>
+
+    <div class="story-inner">
+
+      <!-- LEFT: Headline, body copy, and CTA buttons -->
+      <div class="story-text">
+
+        <div class="section-label">Climate Intelligence</div>
+
+        <!-- SWAP: Change this headline to your own brand statement -->
+        <h2 class="story-headline">
+          Weather felt<br><em>on a human scale</em>
+        </h2>
+
+        <!-- SWAP: Replace body copy with your own marketing text -->
+        <p class="story-body">
+          IBWAPP doesn't just report numbers — it reads the atmosphere the way people do.
+          <strong>Warm morning light, the weight of humid air, a darkening horizon.</strong>
+          Every metric is translated into what you actually feel and experience.
+        </p>
+
+        <p class="story-body">
+          From <strong>microclimate shifts</strong> to long-range seasonal trends,
+          we surface what matters for how you plan your day, your week, your life outdoors.
+        </p>
+
+        <div>
+          <!-- SWAP: Change href to your app store or signup URL -->
+          <a href="#" class="cta-btn">Get the App ↗</a>
+          <a href="#" class="cta-btn-ghost">Learn More</a>
+        </div>
+
+      </div>
+
+
+      <!-- RIGHT: Climate Dial — SVG showing three concentric arcs
+           for Temperature, Humidity, and UV Index.
+           SWAP: Replace the entire .climate-dial div with a chart component,
+           a heatmap, a globe SVG, or a map — whatever fits your data best. -->
+      <div class="story-visual">
+        <div class="climate-dial">
+
+          <!-- SVG: Three concentric arc rings + gradient + filled centre circle -->
+          <svg viewBox="0 0 340 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+            <!-- Outer track ring (faint guide circle) -->
+            <circle cx="170" cy="170" r="140" stroke="rgba(255,255,255,0.06)" stroke-width="1" />
+
+            <!-- Temperature arc — progress ring on the outer track.
+                 SWAP: Adjust stroke-dasharray first value to change how
+                 much of the ring is filled. Full circle circumference = 2π×140 ≈ 879.
+                 Current: 659 filled, 220 empty. -->
+            <circle cx="170" cy="170" r="140" stroke="url(#tempGrad)" stroke-width="3" stroke-linecap="round"
+              stroke-dasharray="659 220" transform="rotate(-90 170 170)" />
+
+            <!-- Middle track ring -->
+            <circle cx="170" cy="170" r="108" stroke="rgba(255,255,255,0.05)" stroke-width="1" />
+
+            <!-- Humidity arc — blue ring on the middle track.
+                 SWAP: Adjust first dasharray value. Full = 2π×108 ≈ 679.
+                 Current: 506 filled (74% of 679). -->
+            <circle cx="170" cy="170" r="108" stroke="rgba(53,141,203,0.5)" stroke-width="2" stroke-linecap="round"
+              stroke-dasharray="506 172" transform="rotate(-90 170 170)" />
+
+            <!-- Inner track ring -->
+            <circle cx="170" cy="170" r="76" stroke="rgba(255,255,255,0.06)" stroke-width="1" />
+
+            <!-- UV Index arc — coral ring on the inner track.
+                 SWAP: Adjust first dasharray value. Full = 2π×76 ≈ 477.
+                 Current: 299 filled (UV 7/11 ≈ 63% of 477). -->
+            <circle cx="170" cy="170" r="76" stroke="rgba(224,122,95,0.45)" stroke-width="2" stroke-linecap="round"
+              stroke-dasharray="299 180" transform="rotate(-90 170 170)" />
+
+            <!-- Filled dark circle in the centre — backdrop for the text overlay -->
+            <circle cx="170" cy="170" r="52" fill="rgba(11,26,46,0.8)" />
+
+            <!-- Gradient definition for the temperature arc (blue → gold → coral) -->
+            <defs>
+              <linearGradient id="tempGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#358DC5" />
+                <stop offset="50%" stop-color="#E8A84C" />
+                <stop offset="100%" stop-color="#E07A5F" />
+              </linearGradient>
+            </defs>
+
+          </svg>
+
+          <!-- Temperature text overlaid in the centre of the SVG.
+               SWAP: Change "28°" to your live temperature value. -->
+          <div class="dial-center-text">
+            <span class="dial-val" id="dial-temp">28°</span>
+            <span class="dial-label">Now</span>
+          </div>
+
+          <!-- Four orbit badges positioned around the dial edge.
+               SWAP: Change each .orbit-badge-val to your live metric values. -->
+
+          <div class="orbit-badge badge-top">
+            <span class="orbit-badge-val" id="dial-humidity">74%</span>
+            <span class="orbit-badge-label">Humidity</span>
+          </div>
+
+          <div class="orbit-badge badge-right">
+            <span class="orbit-badge-val" id="dial-uv">UV 7</span>
+            <span class="orbit-badge-label">Index</span>
+          </div>
+
+          <div class="orbit-badge badge-bottom">
+            <span class="orbit-badge-val" id="dial-wind">14 km/h</span>
+            <span class="orbit-badge-label">Wind</span>
+          </div>
+
+          <div class="orbit-badge badge-left">
+            <span class="orbit-badge-val" id="dial-rain">40%</span>
+            <span class="orbit-badge-label">Rain</span>
+          </div>
+
+        </div>
+      </div>
+      <!-- End climate dial -->
+
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       FEATURE HIGHLIGHTS
+       Six feature cards in a 3-column grid, each explaining
+       a key capability of the IBWAPP application.
+       id="features" is the scroll target for the nav link.
+  ════════════════════════════════════════════════════════════ -->
+  <section class="features-section" id="features">
+
+    <!-- Background radial glow layer -->
+    <div class="features-bg"></div>
+
+    <div class="features-inner">
+
+      <div class="section-label">Why IBWAPP</div>
+      <div class="section-title">Built for <em>how people live outdoors</em></div>
+
+      <!-- Feature cards grid — 3 columns × 2 rows = 6 cards.
+           SWAP: Change icon, title, and description on each card.
+           Add more cards freely — the grid will wrap automatically. -->
+      <div class="features-grid">
+
+        <!-- Feature 1 -->
+        <div class="feature-card">
+          <!-- SWAP: Replace emoji with <img src="icon.svg" /> -->
+          <div class="feature-icon-wrap">🌡</div>
+          <div class="feature-title">Feels-Like Intelligence</div>
+          <div class="feature-desc">
+            Temperature alone means nothing. We factor humidity, wind, UV and solar radiation to tell you what your body
+            actually senses.
+          </div>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feature-card">
+          <div class="feature-icon-wrap">☁️</div>
+          <div class="feature-title">Cloud Story Reading</div>
+          <div class="feature-desc">
+            Cumulus, cumulonimbus, stratus — we name what's above you and explain what it means for the next few hours.
+          </div>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="feature-card">
+          <div class="feature-icon-wrap">🌍</div>
+          <div class="feature-title">Regional Climate Context</div>
+          <div class="feature-desc">
+            Your weather in the context of your climate zone. Monsoon season, harmattan winds, dry spells — we put today
+            in seasonal perspective.
+          </div>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="feature-card">
+          <div class="feature-icon-wrap">⚡</div>
+          <div class="feature-title">Storm Early Warning</div>
+          <div class="feature-desc">
+            Convective activity tracked in real time. Know when and where storms are developing before they arrive.
+          </div>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="feature-card">
+          <div class="feature-icon-wrap">🌅</div>
+          <div class="feature-title">Golden Hour Timing</div>
+          <div class="feature-desc">
+            Sunrise, sunset, golden hour, civil twilight — precise to the minute for your exact coordinates.
+          </div>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="feature-card">
+          <div class="feature-icon-wrap">📊</div>
+          <div class="feature-title">Historical Climate Lens</div>
+          <div class="feature-desc">
+            Compare today against 30-year climate averages. See whether it's unusually warm, wet, or dry for this time
+            of year.
+          </div>
+        </div>
+
+      </div>
+      <!-- End features-grid -->
+
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       FOOTER
+       Three-part row: brand left, nav links centre, copyright right.
+       SWAP: Update links, copyright year, and brand text as needed.
+  ════════════════════════════════════════════════════════════ -->
+  <footer>
+
+    <div class="footer-brand">IBW<span>APP</span></div>
+
+    <ul class="footer-links">
+      <li><a href="#">Privacy</a></li>
+      <li><a href="#">Terms</a></li>
+      <li><a href="#">API</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+
+    <!-- SWAP: Update year and tagline -->
+    <div class="footer-copy">© 2026 IBWAPP · Read the sky</div>
+
+  </footer>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       JAVASCRIPT
+       Loaded last so the HTML is fully parsed before the script runs.
+       All interactivity (live time, cloud parallax, scroll fade-in)
+       lives in script.js — open that file to read and edit it.
+  ════════════════════════════════════════════════════════════ -->
+  <script src="script.js"></script>
+
+</body>
+
+</html>
