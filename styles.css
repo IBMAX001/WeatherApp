@@ -1,0 +1,1474 @@
+/* ================================================================
+   IBWAPP — styles.css
+   All visual styling for the weather app landing page.
+   Linked from index.html via <link rel="stylesheet" href="styles.css">
+================================================================ */
+
+
+/* ================================================================
+   DESIGN TOKENS
+   These CSS variables control the entire colour palette and fonts.
+   Change a value here and it updates everywhere on the page.
+================================================================ */
+:root {
+  /* Sky colour ramp — from deep night navy to warm horizon amber */
+  --sky-deep:    #0b1a2e;
+  --sky-mid:     #1c3a5e;
+  --sky-warm:    #3a6186;
+  --horizon:     #d4793a;
+  --gold:        #e8a84c;   /* accent — used for highlights, labels, CTA */
+
+  /* Cloud and mist tones */
+  --cloud-white: #f0ebe3;
+  --cloud-grey:  #bdc6d0;
+  --mist:        rgba(240,235,227,0.07);
+
+  /* Glass panel styles — used on cards and overlays */
+  --glass-bg:    rgba(255,255,255,0.06);
+  --glass-border:rgba(255,255,255,0.14);
+
+  /* Text colours */
+  --text-light:  #f0ebe3;                  /* primary readable text */
+  --text-muted:  rgba(240,235,227,0.55);   /* secondary / label text */
+  --text-data:   #a8c8e8;                  /* data readouts, mono values */
+
+  /* Status colours */
+  --accent:  #e8a84c;
+  --danger:  #e07a5f;
+
+  /* Typography stacks */
+  --serif: 'Cormorant Garamond', Georgia, serif;  /* headlines, temperatures */
+  --sans:  'DM Sans', system-ui, sans-serif;      /* body, UI text */
+  --mono:  'DM Mono', monospace;                  /* data labels, time, units */
+}
+
+
+/* ================================================================
+   RESET & BASE
+   Clears default browser margin/padding. Sets base font and bg.
+================================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  /* Smooth scroll when nav links are clicked */
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--sans);
+  background: var(--sky-deep);
+  color: var(--text-light);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ── GRAIN TEXTURE OVERLAY ──
+   A fixed noise layer that sits on top of everything (z-index 9999).
+   This gives the page its organic, atmospheric texture.
+   pointer-events: none means it never blocks clicks.
+   SWAP: Remove this block if you prefer a clean digital look. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 1;
+}
+
+
+/* ================================================================
+   NAVIGATION
+   Fixed bar at the top. Fades from dark to transparent downward
+   so it blends into the hero background.
+================================================================ */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.4rem 3rem;
+  /* Gradient fades nav bg into the hero — avoids a hard line */
+  background: linear-gradient(to bottom, rgba(11,26,46,0.9) 0%, transparent 100%);
+}
+
+/* Brand logo — serif font, gold italic accent on "APP" */
+.nav-logo {
+  font-family: var(--serif);
+  font-size: 1.6rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  color: var(--cloud-white);
+  text-decoration: none;
+}
+
+.nav-logo span {
+  color: var(--gold);
+  font-style: italic;
+}
+
+/* Nav link list — horizontal row of uppercase small links */
+.nav-links {
+  display: flex;
+  gap: 2.4rem;
+  list-style: none;
+}
+
+.nav-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover { color: var(--text-light); }
+
+
+/* ================================================================
+   HERO SECTION
+   Full-viewport opening section. Contains the background layers,
+   animated clouds, sun, large temperature, and quick-stat pills.
+================================================================ */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; /* content sits at the bottom of the viewport */
+  padding: 0 3rem 4rem;
+  overflow: hidden;
+}
+
+/* ── HERO BACKGROUND ──
+   The CSS sky gradient behind everything.
+   SWAP: Replace this with background-image: url('your-photo.jpg');
+         add background-size: cover; background-position: center;
+*/
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 60% 0%, #1e4a7a 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 20% 100%, #0d2a4a 0%, transparent 60%),
+    radial-gradient(ellipse 70% 50% at 80% 85%, #1a3358 0%, transparent 50%),
+    linear-gradient(160deg, #0b1a2e 0%, #1c3a5e 40%, #3a6186 70%, #c46c28 100%);
+  z-index: 0;
+}
+
+/* ── CLOUD LAYER CONTAINER ──
+   Wraps all four cloud blobs. pointer-events: none so they
+   don't block mouse clicks on content underneath.
+*/
+.cloud-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Base styles for all cloud elements — each is a blurred oval */
+.cloud {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(1px);
+  animation: drift linear infinite; /* each cloud has its own duration below */
+}
+
+/* Cloud 1 — large, close to camera, slow drift */
+.cloud-1 {
+  width: 520px; height: 160px;
+  top: 18%; left: -60px;
+  background:
+    radial-gradient(ellipse at 30% 50%, rgba(240,235,227,0.18) 0%, transparent 70%),
+    radial-gradient(ellipse at 70% 40%, rgba(200,215,230,0.12) 0%, transparent 60%);
+  animation-duration: 70s;
+  animation-delay: 0s;
+}
+
+/* Cloud 2 — wispy, high in the sky, faster */
+.cloud-2 {
+  width: 380px; height: 90px;
+  top: 10%; left: 40%;
+  background: radial-gradient(ellipse at 50% 50%, rgba(240,235,227,0.10) 0%, transparent 65%);
+  animation-duration: 95s;
+  animation-delay: -20s;
+}
+
+/* Cloud 3 — stormy mass, drifts in reverse (right to left) */
+.cloud-3 {
+  width: 700px; height: 220px;
+  top: 28%; right: -100px;
+  background: radial-gradient(ellipse at 40% 60%, rgba(180,196,214,0.14) 0%, transparent 65%);
+  animation-duration: 120s;
+  animation-delay: -45s;
+  animation-direction: reverse;
+}
+
+/* Cloud 4 — low horizon glow cloud, very slow */
+.cloud-4 {
+  width: 900px; height: 280px;
+  bottom: 20%; left: 10%;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(232,168,76,0.09) 0%, transparent 60%),
+    radial-gradient(ellipse at 30% 60%, rgba(180,196,214,0.10) 0%, transparent 55%);
+  animation-duration: 140s;
+  animation-delay: -70s;
+}
+
+/* Drift animation — clouds slide across the full viewport width */
+@keyframes drift {
+  from { transform: translateX(0); }
+  to   { transform: translateX(110vw); }
+}
+
+/* ── SUN / SKY BODY ──
+   A glowing CSS circle representing the sun.
+   SWAP: Replace with <img src="sun.png"> or an SVG sun illustration.
+   Position is controlled by top/right percentages — adjust freely.
+*/
+.sky-body {
+  position: absolute;
+  top: 14%; right: 18%;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffd580 0%, #e8a84c 45%, rgba(232,168,76,0) 70%);
+  box-shadow:
+    0 0 60px 20px rgba(232,168,76,0.18),
+    0 0 120px 50px rgba(232,168,76,0.07);
+  z-index: 2;
+  animation: pulse-sun 6s ease-in-out infinite;
+}
+
+/* Sun gently pulses to feel alive */
+@keyframes pulse-sun {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.88; transform: scale(1.04); }
+}
+
+/* ── HERO CONTENT GRID ──
+   Two columns: left = temperature + condition, right = tagline + pills
+*/
+.hero-content {
+  position: relative;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 4rem;
+  align-items: flex-end;
+}
+
+.hero-left {}
+
+/* Location label — monospaced, uppercase, gold, with a blinking dot */
+.hero-location {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* The ◉ live indicator before the city name */
+.hero-location::before {
+  content: '◉';
+  font-size: 0.65rem;
+  animation: blink 2s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+/* Massive temperature display — the hero of the hero section */
+.hero-temp {
+  font-family: var(--serif);
+  font-size: clamp(8rem, 16vw, 13rem); /* scales with viewport */
+  font-weight: 300;
+  line-height: 0.85;
+  letter-spacing: -0.02em;
+  color: var(--cloud-white);
+  position: relative;
+  display: inline-block;
+}
+
+/* The °C unit next to the temperature number */
+.hero-temp .unit {
+  font-size: 0.22em;
+  vertical-align: super;
+  color: var(--gold);
+  font-weight: 400;
+  font-style: italic;
+}
+
+/* Weather condition text — italic serif below the temperature */
+.hero-condition {
+  font-family: var(--serif);
+  font-size: 1.55rem;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+/* Live time and humidity line below condition */
+.hero-time {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  margin-top: 1.4rem;
+}
+
+/* Right column of the hero — tagline + quick stat pills */
+.hero-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: 0.6rem;
+}
+
+/* Italic quote-style tagline with a gold left border */
+.hero-tagline {
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  font-weight: 300;
+  line-height: 1.55;
+  color: var(--text-muted);
+  border-left: 1px solid rgba(232,168,76,0.35);
+  padding-left: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.hero-tagline em {
+  color: var(--cloud-white);
+  font-style: italic;
+}
+
+/* Container for the row of stat pills */
+.quick-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+/* Individual stat pill — glass background, rounded, two-part label + value */
+.stat-pill {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 40px;
+  padding: 0.45rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--text-light);
+  backdrop-filter: blur(12px);
+}
+
+.stat-pill-label {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+}
+
+.stat-pill-val {
+  color: var(--gold);
+  font-family: var(--mono);
+  font-size: 0.82rem;
+}
+
+/* ── SCROLL INDICATOR ──
+   Animated vertical line + "Explore" text at bottom centre of hero.
+   Draws the eye downward to encourage scrolling.
+*/
+.scroll-hint {
+  position: absolute;
+  bottom: 1.8rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* The animated line that grows and fades */
+.scroll-line {
+  width: 1px;
+  height: 48px;
+  background: linear-gradient(to bottom, var(--gold), transparent);
+  animation: grow-line 2s ease-in-out infinite;
+}
+
+@keyframes grow-line {
+  0%   { transform: scaleY(0); transform-origin: top; opacity: 0; }
+  50%  { transform: scaleY(1); transform-origin: top; opacity: 1; }
+  100% { transform: scaleY(1); transform-origin: bottom; opacity: 0; }
+}
+
+
+/* ================================================================
+   HORIZON DIVIDER
+   A thin gold gradient line that separates the hero from the
+   content below — like a glowing horizon line.
+================================================================ */
+.horizon-divider {
+  height: 2px;
+  background: linear-gradient(to right, transparent, var(--gold), rgba(232,168,76,0.3), transparent);
+  margin: 0;
+}
+
+
+/* ================================================================
+   SHARED SECTION STYLES
+   Reusable layout patterns for all content sections below the hero.
+================================================================ */
+
+/* Base section padding */
+.section {
+  padding: 5rem 3rem;
+  position: relative;
+}
+
+/* Dark radial gradient bg layer — each section has its own depth */
+.section-bg-layer {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 50% 80% at 80% 50%, rgba(28,58,94,0.5) 0%, transparent 70%),
+    var(--sky-deep);
+  z-index: 0;
+}
+
+/* Centres and constrains section content to max 1200px */
+.section-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Small monospaced category label above section titles */
+.section-label {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.5rem;
+}
+
+/* Large serif section heading */
+.section-title {
+  font-family: var(--serif);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 300;
+  line-height: 1.15;
+  margin-bottom: 3rem;
+  color: var(--cloud-white);
+}
+
+.section-title em {
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+
+/* ================================================================
+   WEATHER CARDS — ROW 1 (four equal columns)
+   Each card = one weather metric (humidity, wind, UV, pressure).
+   Cards are separated by 1px gaps through the grid background trick.
+================================================================ */
+
+/* Grid container — the glass border shows through 1px gaps */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--glass-border); /* this IS the border between cards */
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  overflow: hidden; /* clips children to the rounded corners */
+}
+
+/* Individual metric card */
+.weather-card {
+  background: rgba(11,26,46,0.65);
+  backdrop-filter: blur(20px);
+  padding: 2rem 1.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  transition: background 0.3s;
+  cursor: default;
+}
+
+.weather-card:hover {
+  background: rgba(28,58,94,0.75);
+}
+
+/* Icon circle — coloured background matches the metric type */
+.card-icon {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+}
+
+/* Per-metric icon background colours */
+.card-icon-humidity  { background: rgba(53,141,203,0.18); }
+.card-icon-wind      { background: rgba(168,200,232,0.12); }
+.card-icon-uv        { background: rgba(232,168,76,0.15); }
+.card-icon-pressure  { background: rgba(180,180,200,0.12); }
+
+/* Monospaced uppercase metric name label */
+.card-metric {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Large serif number — the main value on each card */
+.card-value {
+  font-family: var(--serif);
+  font-size: 3.2rem;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--cloud-white);
+}
+
+/* Superscript unit (e.g. %, km/h) next to the value */
+.card-value sup {
+  font-size: 0.45em;
+  color: var(--text-muted);
+  font-style: italic;
+  vertical-align: super;
+}
+
+/* Descriptive sentence at the bottom of each card */
+.card-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Progress bar track (empty background) */
+.card-bar-track {
+  height: 3px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+/* Progress bar fill — width is set inline in the HTML as a percentage */
+.card-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(to right, var(--sky-warm), var(--gold));
+}
+
+
+/* ================================================================
+   WEATHER CARDS — ROW 2 (wide feels-like + two narrow cards)
+   Different column layout: 2fr for the temperature card, 1fr each for rain/cloud.
+================================================================ */
+
+.cards-grid-2 {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 1px;
+  background: var(--glass-border);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  overflow: hidden;
+  margin-top: 1px; /* connects visually to cards-grid above */
+}
+
+/* Wide card variant — slightly more breathing room */
+.weather-card-wide {
+  background: rgba(11,26,46,0.55);
+  backdrop-filter: blur(20px);
+  padding: 2.4rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: background 0.3s;
+}
+
+.weather-card-wide:hover { background: rgba(28,58,94,0.65); }
+
+/* Row inside the wide card: main temp + feels-like side by side */
+.wide-temp-display {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+
+/* The large temperature number in the wide card */
+.wide-temp-main {
+  font-family: var(--serif);
+  font-size: 5.5rem;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--cloud-white);
+}
+
+/* "Feels Like" label + value stacked beside the main temp */
+.wide-temp-feels {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0.8rem;
+}
+
+.wide-temp-feels .label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+}
+
+.wide-temp-feels .val {
+  font-family: var(--mono);
+  font-size: 1.1rem;
+  color: var(--text-data);
+}
+
+/* Colour gradient bar showing cold→warm range for the day */
+.temp-range-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right, #358DC5, #7EB5D3, #E8A84C, #E07A5F);
+  position: relative;
+  margin: 0.5rem 0;
+}
+
+/* White dot marker showing current temp on the range bar.
+   SWAP: Change 'left' percentage in the HTML to match current temp. */
+.temp-range-marker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px; height: 12px;
+  background: var(--cloud-white);
+  border-radius: 50%;
+  border: 2px solid var(--sky-deep);
+}
+
+/* Low / High labels at either end of the range bar */
+.temp-range-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+
+/* ================================================================
+   7-DAY FORECAST STRIP
+   A horizontal row of 7 day columns, each showing day name,
+   weather icon, high temp, and low temp.
+================================================================ */
+
+.forecast-section {
+  padding: 0 3rem 5rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* Max-width wrapper — same as other sections */
+.forecast-strip {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* "7 — Day Outlook" label above the strip */
+.forecast-label {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 1.2rem;
+}
+
+/* 7-column grid — one column per day */
+.forecast-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: var(--glass-border);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* Individual day column */
+.forecast-day {
+  background: rgba(11,26,46,0.60);
+  backdrop-filter: blur(16px);
+  padding: 1.4rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+  transition: background 0.25s;
+}
+
+.forecast-day:hover { background: rgba(28,58,94,0.7); }
+
+/* Today's column has a subtle gold tint */
+.forecast-day.today {
+  background: rgba(232,168,76,0.09);
+}
+
+/* Day name label (Mon, Tue, etc.) */
+.forecast-day-name {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Today's label is gold to stand out */
+.forecast-day.today .forecast-day-name { color: var(--gold); }
+
+/* Weather icon — currently emoji, SWAP with <img> */
+.forecast-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+/* High temperature in serif */
+.forecast-temp-hi {
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: var(--cloud-white);
+}
+
+/* Low temperature in mono, muted */
+.forecast-temp-lo {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+
+/* ================================================================
+   CLIMATE STORY SECTION
+   Two-column layout: editorial text on the left,
+   the climate dial SVG on the right.
+================================================================ */
+
+.story-section {
+  padding: 6rem 3rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle blue and gold radial glows behind the story content */
+.story-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 70% at 10% 50%, rgba(58,97,134,0.25) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 50% at 90% 30%, rgba(232,168,76,0.08) 0%, transparent 55%);
+  z-index: 0;
+}
+
+/* Two-column grid: text left, visual right */
+.story-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: center;
+}
+
+.story-text {}
+
+.story-text .section-label { margin-bottom: 0.8rem; }
+
+/* Large serif headline in the story section */
+.story-headline {
+  font-family: var(--serif);
+  font-size: clamp(2.5rem, 4.5vw, 3.8rem);
+  font-weight: 300;
+  line-height: 1.1;
+  margin-bottom: 1.6rem;
+}
+
+.story-headline em {
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+/* Body copy paragraphs */
+.story-body {
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+}
+
+.story-body strong {
+  color: var(--cloud-white);
+  font-weight: 500;
+}
+
+/* Primary CTA button — solid gold pill */
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--gold);
+  color: var(--sky-deep);
+  text-decoration: none;
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.85rem 2rem;
+  border-radius: 40px;
+  transition: all 0.25s;
+}
+
+.cta-btn:hover {
+  background: var(--cloud-white);
+  transform: translateY(-2px);
+}
+
+/* Secondary CTA button — ghost / outline style */
+.cta-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  border: 1px solid var(--glass-border);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.85rem 2rem;
+  border-radius: 40px;
+  transition: all 0.25s;
+  margin-left: 1rem;
+}
+
+.cta-btn-ghost:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* Container that centres the climate dial SVG */
+.story-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Climate dial — 340×340 relative container (SVG fills it) */
+.climate-dial {
+  position: relative;
+  width: 340px;
+  height: 340px;
+}
+
+.climate-dial svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Absolutely centred text overlay inside the dial */
+.dial-center-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+/* Large temperature value in the centre of the dial */
+.dial-center-text .dial-val {
+  font-family: var(--serif);
+  font-size: 3.8rem;
+  font-weight: 300;
+  color: var(--cloud-white);
+  display: block;
+  line-height: 1;
+}
+
+/* "Now" label below the dial value */
+.dial-center-text .dial-label {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Small glass badges that orbit the dial at top/right/bottom/left */
+.orbit-badge {
+  position: absolute;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  padding: 0.6rem 1rem;
+  text-align: center;
+}
+
+/* Metric value inside an orbit badge */
+.orbit-badge-val {
+  font-family: var(--mono);
+  font-size: 1rem;
+  color: var(--text-data);
+  display: block;
+}
+
+/* Label below the value in the badge */
+.orbit-badge-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Badge positions around the dial */
+.badge-top    { top: -1rem;  left: 50%; transform: translateX(-50%); }
+.badge-right  { right: -2rem; top: 40%; }
+.badge-bottom { bottom: -1rem; left: 50%; transform: translateX(-50%); }
+.badge-left   { left: -2rem; top: 40%; }
+
+
+/* ================================================================
+   FEATURES SECTION
+   3-column grid of feature cards — each explains an app capability.
+================================================================ */
+
+.features-section {
+  padding: 5rem 3rem;
+  position: relative;
+}
+
+/* Subtle radial glow from the top centre */
+.features-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(28,58,94,0.4) 0%, transparent 65%);
+  z-index: 0;
+}
+
+.features-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* 3-column grid for feature cards */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 3rem;
+}
+
+/* Individual feature card — glass panel with gold hover border */
+.feature-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 2rem 1.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  backdrop-filter: blur(16px);
+  transition: all 0.3s;
+}
+
+.feature-card:hover {
+  border-color: rgba(232,168,76,0.25);
+  transform: translateY(-3px); /* lifts card on hover */
+}
+
+/* Icon wrapper — gold-tinted square with rounded corners */
+.feature-icon-wrap {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  background: rgba(232,168,76,0.1);
+  border: 1px solid rgba(232,168,76,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+/* Feature card headline */
+.feature-title {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-weight: 400;
+  color: var(--cloud-white);
+}
+
+/* Feature card body copy */
+.feature-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+
+
+
+/* ================================================================
+   CITY SEARCH SECTION
+   Styles for the "Explore Any City" section.
+   Reuses existing design tokens and card classes throughout
+   so it feels native to the rest of the page.
+================================================================ */
+
+/* Section wrapper — same base padding as .section */
+.search-section {
+  padding: 5rem 3rem 6rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background — warm gold glow from the centre, blending into the sky */
+.search-section-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(232,168,76,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 60% at 20% 80%, rgba(28,58,94,0.4) 0%, transparent 60%),
+    var(--sky-deep);
+  z-index: 0;
+}
+
+
+/* ── SEARCH BAR ──
+   Glass pill that contains the icon, input, and button.
+   Uses the same glass-bg / glass-border tokens as the stat pills. */
+.city-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 60px;
+  backdrop-filter: blur(20px);
+  padding: 0.5rem 0.5rem 0.5rem 1.4rem;
+  max-width: 680px;
+  transition: border-color 0.25s;
+  margin-bottom: 2.5rem;
+}
+
+/* Highlight the bar when the input inside it is focused */
+.city-search-bar:focus-within {
+  border-color: rgba(232,168,76,0.45);
+}
+
+/* Location pin decorative icon — monospaced, gold */
+.search-icon {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  color: var(--gold);
+  margin-right: 0.8rem;
+  flex-shrink: 0;
+  animation: blink 2s ease-in-out infinite; /* reuses the existing blink keyframe */
+}
+
+/* Text input — transparent, no border, grows to fill available space */
+.city-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  color: var(--text-light);
+  letter-spacing: 0.02em;
+  min-width: 0; /* prevents flex overflow on small screens */
+}
+
+/* Input placeholder text */
+.city-input::placeholder {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Search button — matches the .cta-btn pill style exactly */
+.city-search-btn {
+  flex-shrink: 0;
+  background: var(--gold);
+  color: var(--sky-deep);
+  border: none;
+  border-radius: 40px;
+  padding: 0.7rem 1.6rem;
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.city-search-btn:hover {
+  background: var(--cloud-white);
+  transform: scale(1.03);
+}
+
+.city-search-btn:active {
+  transform: scale(0.97);
+}
+
+/* Button pulsing state while loading — adds a subtle shimmer */
+.city-search-btn.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Full-section spinner overlay — shown during geolocation auto-load */
+.city-spinner-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  background: radial-gradient(ellipse at center, rgba(11,26,46,0.6) 0%, transparent 80%);
+}
+.city-spinner-overlay.visible { display: flex; }
+
+.city-spinner {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(232,168,76,0.15);
+  border-top-color: var(--gold);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── LOADING STATE ──
+   Three bouncing dots + italic text.
+   Hidden by default; revealed via .visible class from script.js. */
+.city-loading {
+  display: none; /* hidden until script.js adds .visible */
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.city-loading.visible {
+  display: flex;
+}
+
+/* Each dot bounces in sequence via animation-delay */
+.city-loading-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: bounce-dot 1.2s ease-in-out infinite;
+}
+
+.city-loading-dot:nth-child(2) { animation-delay: 0.15s; }
+.city-loading-dot:nth-child(3) { animation-delay: 0.30s; }
+
+@keyframes bounce-dot {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40%           { transform: translateY(-6px); opacity: 1; }
+}
+
+/* "Reading the atmosphere…" text beside the dots */
+.city-loading-text {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-left: 0.4rem;
+}
+
+
+/* ── ERROR STATE ──
+   Hidden by default; shown when city not found or API fails. */
+.city-error {
+  display: none;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+  background: rgba(224,122,95,0.08);
+  border: 1px solid rgba(224,122,95,0.2);
+  border-radius: 12px;
+  padding: 0.9rem 1.4rem;
+  max-width: 680px;
+}
+
+.city-error.visible {
+  display: flex;
+}
+
+.city-error-icon {
+  color: var(--danger);
+  font-size: 0.9rem;
+}
+
+.city-error span:last-child {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+
+/* ── RESULTS PANEL ──
+   Hidden initially. Fades and slides in when script.js adds .visible. */
+.city-result-panel {
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+  /* Transition fires when .visible is added */
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.city-result-panel.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* ── RESULT HEADER ──
+   City name on the left, lat/lon coordinates on the right */
+.city-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.6rem;
+  padding-bottom: 1.2rem;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.city-result-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* Blinking live dot — same as hero-location::before */
+.city-result-dot {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--gold);
+  animation: blink 2s ease-in-out infinite;
+}
+
+/* City + country name */
+.city-result-name {
+  font-family: var(--serif);
+  font-size: 1.8rem;
+  font-weight: 300;
+  color: var(--cloud-white);
+}
+
+/* Lat/lon string — monospaced, muted */
+.city-result-coords {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+}
+
+
+/* ── FEATURED TEMPERATURE ROW ──
+   Large temperature number + condition + feels-like side by side */
+.city-result-featured {
+  display: flex;
+  align-items: flex-end;
+  gap: 2.5rem;
+  margin-bottom: 1.5rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  backdrop-filter: blur(20px);
+  padding: 2rem 2.4rem;
+}
+
+/* Large serif temperature — same visual weight as the hero temp */
+.city-featured-temp {
+  display: flex;
+  align-items: flex-start;
+  line-height: 1;
+}
+
+.city-temp-val {
+  font-family: var(--serif);
+  font-size: clamp(4rem, 8vw, 7rem);
+  font-weight: 300;
+  color: var(--cloud-white);
+}
+
+/* The °C unit as superscript */
+.city-temp-unit {
+  font-family: var(--serif);
+  font-size: 1.8rem;
+  font-weight: 300;
+  color: var(--gold);
+  font-style: italic;
+  margin-top: 0.6rem;
+}
+
+/* Meta column beside the temperature */
+.city-featured-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+/* Weather condition text — italic serif */
+.city-condition {
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+/* Feels-like line — mono data style */
+.city-feels {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--text-data);
+  letter-spacing: 0.05em;
+}
+
+/* Large weather emoji / icon */
+.city-weather-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+  margin-top: 0.3rem;
+}
+
+/* Metric cards grid for the city search results.
+   Reuses the exact same .cards-grid class — no new styles needed.
+   This override just removes the top margin that .cards-grid normally has. */
+.city-metrics-grid {
+  margin-top: 0;
+}
+
+
+footer {
+  border-top: 1px solid var(--glass-border);
+  padding: 2.5rem 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-brand {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+}
+
+/* Gold italic accent on the "APP" part of the footer brand */
+.footer-brand span {
+  color: var(--gold);
+  font-style: italic;
+}
+
+.footer-copy {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+}
+
+.footer-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+}
+
+.footer-links a {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover { color: var(--gold); }
+@media (max-width: 768px) {
+
+  /* Nav — hide links, just show logo */
+  .nav-links { display: none; }
+  nav { padding: 1.2rem 1.5rem; }
+
+  /* Hero */
+  .hero { padding: 0 1.5rem 3rem; }
+  .hero-content { grid-template-columns: 1fr; gap: 2rem; }
+  .hero-temp { font-size: clamp(5rem, 20vw, 8rem); }
+  .hero-right { padding-bottom: 0; }
+
+  /* Sections */
+  .section, .search-section, .story-section,
+  .features-section, .forecast-section { padding: 3rem 1.5rem; }
+  .section-inner, .story-inner,
+  .features-inner, .forecast-strip { max-width: 100%; }
+
+  /* Search bar — stack vertically */
+  .city-search-bar { flex-direction: column; border-radius: 18px; padding: 1rem; align-items: stretch; }
+  .city-search-btn { border-radius: 12px; text-align: center; margin-top: 0.5rem; }
+  .search-icon { display: none; }
+
+  /* Cards — single column */
+  .cards-grid, .cards-grid-2 { grid-template-columns: 1fr; }
+
+  /* Forecast — scroll horizontally instead of wrapping */
+  .forecast-days { grid-template-columns: repeat(7, minmax(90px, 1fr)); overflow-x: auto; }
+
+  /* Story section — stack vertically */
+  .story-inner { grid-template-columns: 1fr; gap: 3rem; }
+  .climate-dial { width: 260px; height: 260px; }
+
+  /* Features — single column */
+  .features-grid { grid-template-columns: 1fr; }
+
+  /* City result */
+  .city-result-featured { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .city-result-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+}
